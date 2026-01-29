@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="theme-color" content="#E7E1D6" />
+  <link rel="manifest" href="./manifest.webmanifest" />
+  <link rel="stylesheet" href="./styles.css" />
+  <title>Steam Out</title>
+</head>
+
+<body>
+
+  <header class="top">
+    <div class="brand">Steam Out</div>
+    <div class="row">
+      <button class="btn ghost" id="themeToggle" title="Cambiar tema"
+        style="padding: 8px; font-size: 18px; display: flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px;">🌙</button>
+      <div class="badge" id="netBadge">offline-ready</div>
+    </div>
+  </header>
+
+  <main class="wrap">
+
+    <section class="card hero">
+      <div class="card-header">
+        <h1>SOS · Grounding</h1>
+        <span class="badge danger">Urgente</span>
+      </div>
+      <p class="muted">Para cuando el pensamiento o la emoción te abruma. Técnica 5-4-3-2-1.</p>
+      <button class="btn primary danger large" id="sosBtn">Necesito calmarme ahora</button>
+    </section>
+
+    <section class="card">
+      <h1>Respiración Rítmica</h1>
+      <p class="muted">Reduce la activación fisiológica (Cuadrada 4-4-4-4)</p>
+
+      <div class="row">
+        <button class="btn" id="breathToggle">Iniciar</button>
+        <div class="pill" id="breathPhase">Listo</div>
+        <div class="timer" id="breathTimer" style="font-family:monospace; font-weight:700; color:var(--accent)">0s</div>
+      </div>
+
+      <div class="breath">
+        <div class="circle" id="breathCircle"></div>
+        <div class="circle-inner" id="breathCircleInner"></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h1>Ruido marrón</h1>
+      <p class="muted">Procedural · no loop</p>
+
+      <div class="row">
+        <button class="btn" id="noiseToggle">Encender</button>
+        <label class="row grow">
+          <span class="muted">Vol</span>
+          <input id="noiseVol" type="range" min="0" max="100" value="25" />
+        </label>
+      </div>
+    </section>
+
+    <section class="card">
+      <h1>Cierre Cognitivo</h1>
+      <p class="muted">Intervenciones breves para salir del bucle mental</p>
+      <div class="row stack">
+        <button class="btn" id="actBtn">
+          <span class="btn-title">Tomar Distancia (ACT)</span>
+          <span class="btn-sub">Observar el pensamiento · 60s</span>
+        </button>
+        <button class="btn" id="dbtBtn">
+          <span class="btn-title">Cambio de Estado (DBT)</span>
+          <span class="btn-sub">Fisiología y enfoque · 90s</span>
+        </button>
+      </div>
+      <p class="tiny muted" style="margin-top:12px">No guarda datos. Uso 100% privado y local.</p>
+    </section>
+
+  </main>
+
+  <footer class="bottom-info">
+    <div class="disclaimer">
+      <strong>Aviso:</strong> Esta aplicación es una herramienta de apoyo para la autorregulación emocional. No
+      sustituye la atención médica o psicológica profesional. En caso de crisis grave, contacta con servicios de
+      emergencia locales.
+    </div>
+    <div class="credits">
+      Desarrollado por <strong>CACB</strong> &middot; 2026
+    </div>
+  </footer>
+
+  <!-- Overlay único reutilizable -->
+  <div class="overlay" id="overlay" aria-hidden="true">
+    <div class="overlayCard">
+      <div class="overlayTop">
+        <div class="overlayTitle" id="ovTitle">SOS</div>
+        <button class="btn ghost" id="ovClose">Cerrar</button>
+      </div>
+
+      <div id="ovIllustration" style="text-align: center; margin-bottom: 12px; display: none;">
+        <img id="ovImg" src="" alt="Ilustración técnica"
+          style="width: 100%; max-height: 180px; border-radius: 16px; object-fit: cover; border: 1px solid var(--line);">
+      </div>
+
+      <div class="step">
+        <div class="stepTitle" id="ovStepTitle"></div>
+        <p class="muted" id="ovHint"></p>
+      </div>
+
+      <div class="tapArea" id="ovTapArea">
+        <div class="tapCount" id="ovCount">0</div>
+        <div class="muted">Toques</div>
+      </div>
+
+      <div class="progress-bar-wrap">
+        <div class="progress-bar" id="ovProgress"></div>
+      </div>
+
+      <div class="row">
+        <div class="grow"></div>
+        <button class="btn" id="ovNext" disabled>Siguiente paso</button>
+      </div>
+
+      <p class="tiny muted">
+        Herramienta de apoyo no clínica &middot; CACB
+      </p>
+    </div>
+  </div>
+
+  <script src="./app.js"></script>
+</body>
+
+</html>
