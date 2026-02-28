@@ -57,6 +57,29 @@
       <p class="tiny" id="moduleStatus">Verificando módulos…</p>
     </div>
 
+    <section class="card">
+      <h1>Nivel de apoyo (stepped care)</h1>
+      <p class="muted">Ajusta la intensidad disponible. En nivel 4 solo se muestra pantalla de crisis/derivación.</p>
+      <label class="muted" for="careLevel">Nivel actual</label>
+      <select id="careLevel">
+        <option value="1">Nivel 1 · autogestión completa</option>
+        <option value="2">Nivel 2 · autogestión supervisada</option>
+        <option value="3">Nivel 3 · solo herramientas simples</option>
+        <option value="4">Nivel 4 · crisis/derivación</option>
+      </select>
+      <p class="tiny" id="careHint">Se aplicará gating de seguridad automáticamente.</p>
+    </section>
+
+    <section class="card">
+      <h1>STOP universal</h1>
+      <p class="muted">Si aparece mareo intenso, sensación de desmayo, dolor torácico, disnea marcada, desrealización que sube o pánico que escala:</p>
+      <ul>
+        <li>Pausa inmediatamente la técnica.</li>
+        <li>Respira normal (sin retención), pies al suelo y nombra 3 objetos.</li>
+        <li>Si no baja en pocos minutos, usa el botón de crisis.</li>
+      </ul>
+    </section>
+
     <section class="card hero">
       <div class="card-header">
         <h1>SOS · Grounding</h1>
@@ -68,7 +91,14 @@
 
     <section class="card">
       <h1>Respiración Rítmica</h1>
-      <p class="muted">Reduce la activación fisiológica (Cuadrada 4-4-4-4)</p>
+      <p class="muted">Microintervención de 30–180s. Usa EMA pre/post para medir cambio.</p>
+      <label class="muted" for="breathMode">Modo</label>
+      <select id="breathMode">
+        <option value="extended">Exhalación prolongada (4-6)</option>
+        <option value="coherence">Coherencia cardiaca (5-5)</option>
+        <option value="anchor3">3 respiraciones de anclaje</option>
+        <option value="box">Box breathing (4-4-4-4)</option>
+      </select>
 
       <div class="row">
         <button class="btn" id="breathToggle">Iniciar</button>
@@ -80,6 +110,20 @@
         <div class="circle" id="breathCircle"></div>
         <div class="circle-inner" id="breathCircleInner"></div>
       </div>
+    </section>
+
+    <section class="card" id="stateMenuCard">
+      <h1>Menú rápido por estado</h1>
+      <p class="muted">Cada estado ofrece 1 respiratoria + 1 grounding + 1 ACT/DBT/TCC conductual.</p>
+      <label class="muted" for="stateSelect">Estado actual</label>
+      <select id="stateSelect">
+        <option value="ansiedad">Ansiedad alta</option>
+        <option value="rumiacion">Rumiación</option>
+        <option value="tristeza">Tristeza / apagamiento</option>
+        <option value="irritabilidad">Irritabilidad</option>
+        <option value="insomnio">Insomnio</option>
+      </select>
+      <div class="row stack" id="stateTools" style="margin-top:12px"></div>
     </section>
 
     <section class="card">
@@ -131,6 +175,21 @@
         <button class="btn ghost" id="ovClose">Cerrar</button>
       </div>
 
+      <div class="ema-box" id="emaBox">
+        <div class="row stack">
+          <label>Ansiedad/activación (0-10)
+            <input id="emaActivation" type="number" min="0" max="10" step="1" />
+          </label>
+          <label>Malestar (0-10)
+            <input id="emaDistress" type="number" min="0" max="10" step="1" />
+          </label>
+        </div>
+        <div class="row" style="margin-top:10px">
+          <div class="grow"></div>
+          <button class="btn" id="emaContinue">Continuar</button>
+        </div>
+      </div>
+
       <div id="ovIllustration" style="text-align: center; margin-bottom: 12px; display: none;">
         <img id="ovImg" src="" alt="Ilustración técnica"
           style="width: 100%; max-height: 180px; border-radius: 16px; object-fit: cover; border: 1px solid var(--line);">
@@ -151,6 +210,7 @@
       </div>
 
       <div class="row">
+        <button class="btn danger" id="ovStop">Pausa (STOP)</button>
         <div class="grow"></div>
         <button class="btn" id="ovNext" disabled>Siguiente paso</button>
       </div>
