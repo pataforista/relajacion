@@ -3,6 +3,21 @@ if ("serviceWorker" in navigator && location.protocol !== "file:") {
   navigator.serviceWorker.register("./sw.js");
 }
 
+/* ===== Simple local DB ===== */
+const DB = {
+  get(key, fallback = null) {
+    try {
+      const raw = localStorage.getItem(key);
+      return raw ? JSON.parse(raw) : fallback;
+    } catch {
+      return fallback;
+    }
+  },
+  set(key, value) {
+    localStorage.setItem(key, JSON.stringify(value));
+  }
+};
+
 /* ===== Network badge ===== */
 const netBadge = document.getElementById("netBadge");
 const updateNet = () =>
@@ -22,6 +37,146 @@ const setTheme = (t) => {
 };
 setTheme(getTheme());
 themeToggle.onclick = () => setTheme(body.getAttribute("data-theme") === "dark" ? "light" : "dark");
+
+/* ===== Disclaimer gate + onboarding ===== */
+const GATE_VERSION = "v1.0";
+const gate = document.getElementById("disclaimerGate");
+const gateStep = document.getElementById("gateStep");
+const gateBack = document.getElementById("gateBack");
+const gateNext = document.getElementById("gateNext");
+
+const onboarding = {
+  step: 0,
+  answers: {},
+  comprehension: {}
+};
+
+const gateScreens = [
+  {
+    title: "Límites de uso",
+    html: "<ul><li>Herramienta de apoyo autogestivo.</li><li>No diagnostica ni reemplaza terapia.</li><li>En crisis, prioriza conexión humana.</li></ul>"
+  },
+  {
+    title: "Comprensión 1/2",
+    html: "<p>¿Esta app sustituye tratamiento profesional?</p><label><input type='radio' name='q1' value='no'> No</label><br><label><input type='radio' name='q1' value='yes'> Sí</label>"
+  },
+  {
+    title: "Comprensión 2/2",
+    html: "<p>Si hay riesgo inminente, ¿qué debe hacer la app?</p><label><input type='radio' name='q2' value='crisis'> Mostrar conexión humana/crisis</label><br><label><input type='radio' name='q2' value='therapy'> Iniciar terapia guiada</label>"
+  },
+  {
+    title: "Screening mínimo",
+    html: "<p>PHQ-9 (0-27): <input id='phq9' type='number' min='0' max='27' value='0'></p><p>GAD-7 (0-21): <input id='gad7' type='number' min='0' max='21' value='0'></p><p>C-SSRS riesgo inminente: <select id='cssrs'><option value='no'>No</option><option value='yes'>Sí</option></select></p><p>¿Historial reciente de autolesión? <select id='selfHarm'><option value='no'>No</option><option value='yes'>Sí</option></select></p><p>Contacto de seguridad: <input id='safeName' placeholder='Nombre'> <input id='safePhone' placeholder='Teléfono'></p>"
+  }
+];
+
+function renderGateStep() {
+  const cfg = gateScreens[onboarding.step];
+  gateStep.innerHTML = `<div class="gate-step"><h2>${cfg.title}</h2>${cfg.html}</div>`;
+  gateBack.style.display = onboarding.step === 0 ? "none" : "";
+  gateNext.textContent = onboarding.step === gateScreens.length - 1 ? "Finalizar" : "Continuar";
+}
+
+function getLevel(screening) {
+  if (screening.cssrs === "yes") return 4;
+  if (screening.phq9 >= 20 || screening.gad7 >= 15 || screening.selfHarm === "yes") return 3;
+  if (screening.phq9 >= 10 || screening.gad7 >= 10) return 2;
+  return 1;
+}
+
+function completeGate() {
+  const q1 = document.querySelector("input[name='q1']:checked")?.value;
+  const q2 = document.querySelector("input[name='q2']:checked")?.value;
+  if (q1 !== "no" || q2 !== "crisis") {
+    onboarding.step = 1;
+    renderGateStep();
+    alert("Repasemos los límites para un uso seguro.");
+    return;
+  }
+
+  const screening = {
+    phq9: Number(document.getElementById("phq9")?.value || 0),
+    gad7: Number(document.getElementById("gad7")?.value || 0),
+    cssrs: document.getElementById("cssrs")?.value || "no",
+    selfHarm: document.getElementById("selfHarm")?.value || "no",
+    safetyName: document.getElementById("safeName")?.value || "",
+    safetyPhone: document.getElementById("safePhone")?.value || "",
+    createdAt: new Date().toISOString()
+  };
+  screening.level = getLevel(screening);
+
+  DB.set("disclaimer", { accepted: true, version: GATE_VERSION, acceptedAt: new Date().toISOString() });
+  DB.set("screeningResults", screening);
+  DB.set("safetyContact", { name: screening.safetyName, phone: screening.safetyPhone });
+
+  gate.classList.remove("show");
+  applyLevelControls();
+  maybeShowCrisis();
+}
+
+gateBack.onclick = () => {
+  onboarding.step = Math.max(0, onboarding.step - 1);
+  renderGateStep();
+};
+
+gateNext.onclick = () => {
+  if (onboarding.step < gateScreens.length - 1) {
+    onboarding.step += 1;
+    renderGateStep();
+    return;
+  }
+  completeGate();
+};
+
+function initGate() {
+  const accepted = DB.get("disclaimer");
+  if (!accepted || accepted.version !== GATE_VERSION) {
+    gate.classList.add("show");
+    gate.setAttribute("aria-hidden", "false");
+    renderGateStep();
+  }
+}
+
+/* ===== 14-day reminder ===== */
+function maybeShowReminder() {
+  const reminderCard = document.getElementById("reminderCard");
+  const lastShown = DB.get("lastDisclaimerReminder", null);
+  const now = Date.now();
+  const days = lastShown ? (now - new Date(lastShown).getTime()) / (1000 * 60 * 60 * 24) : Infinity;
+  if (days >= 14) {
+    reminderCard.style.display = "block";
+    DB.set("lastDisclaimerReminder", new Date().toISOString());
+  }
+}
+
+/* ===== Crisis mode ===== */
+const crisisBtn = document.getElementById("crisisBtn");
+const crisisScreen = document.getElementById("crisisScreen");
+const closeCrisis = document.getElementById("closeCrisis");
+const safetyCall = document.getElementById("safetyCall");
+
+function setCrisisScreen(show) {
+  crisisScreen.classList.toggle("show", show);
+  body.classList.toggle("crisis-active", show);
+  if (show) {
+    DB.set("crisisEvents", [...DB.get("crisisEvents", []), { at: new Date().toISOString(), source: "manual_or_level4" }]);
+  }
+}
+
+crisisBtn.onclick = () => setCrisisScreen(true);
+closeCrisis.onclick = () => setCrisisScreen(false);
+
+function maybeShowCrisis() {
+  const screening = DB.get("screeningResults");
+  const safety = DB.get("safetyContact", {});
+  if (safety?.phone) {
+    safetyCall.href = `tel:${safety.phone}`;
+    safetyCall.textContent = `Llamar a ${safety.name || "contacto de seguridad"}`;
+  }
+  if (screening?.level === 4) {
+    setCrisisScreen(true);
+  }
+}
 
 /* ===== Overlay base ===== */
 const overlay = document.getElementById("overlay");
@@ -46,10 +201,41 @@ function openOverlay() {
 function closeOverlay() {
   overlay.classList.remove("show");
   overlay.setAttribute("aria-hidden", "true");
-  // Quitar el foco de cualquier botón dentro al cerrar
   if (document.activeElement) document.activeElement.blur();
 }
 ovClose.onclick = closeOverlay;
+
+/* ===== Stepped care permissions ===== */
+const toolGateMsg = document.getElementById("toolGateMsg");
+const actBtn = document.getElementById("actBtn");
+const dbtBtn = document.getElementById("dbtBtn");
+
+function canUseTool(toolName) {
+  const screening = DB.get("screeningResults", { level: 1, selfHarm: "no" });
+  if (screening.level >= 4) return false;
+  if (toolName === "dbtTemp" && (screening.level >= 3 || screening.selfHarm === "yes")) return false;
+  if (toolName === "cognitive" && screening.level >= 3) return false;
+  return true;
+}
+
+function applyLevelControls() {
+  const screening = DB.get("screeningResults", { level: 1 });
+  if (screening.level >= 3) {
+    actBtn.disabled = true;
+    toolGateMsg.style.display = "block";
+    toolGateMsg.textContent = "Nivel 3+: herramientas cognitivas complejas desactivadas; usa estabilización y derivación.";
+  } else {
+    actBtn.disabled = false;
+    toolGateMsg.style.display = "none";
+  }
+}
+
+/* ===== Session/EMA logging ===== */
+function logToolSession(tool, event, pre = null, post = null) {
+  const sessions = DB.get("toolSessions", []);
+  sessions.push({ tool, event, pre, post, at: new Date().toISOString() });
+  DB.set("toolSessions", sessions);
+}
 
 /* ===== SOS 5-4-3-2-1 ===== */
 const sosBtn = document.getElementById("sosBtn");
@@ -75,8 +261,8 @@ function startSOS() {
   ovTitle.textContent = "SOS";
   ovNext.style.display = "";
   sI = 0; sN = 0;
+  logToolSession("sos", "start", promptEMA("Antes de iniciar, de 0 a 10 ¿qué tan activado/a estás?"));
 
-  // Asignar el click de next específicamente para SOS
   ovNext.onclick = () => {
     sI++;
     if (sI >= SOS.length) {
@@ -85,6 +271,7 @@ function startSOS() {
       ovTapArea.style.display = "none";
       ovNext.disabled = true;
       ovProgress.style.width = "100%";
+      logToolSession("sos", "complete", null, promptEMA("Después del ejercicio, de 0 a 10 ¿qué tan activado/a estás?"));
       return;
     }
     sN = 0;
@@ -107,31 +294,42 @@ function loadSOS() {
 sosBtn.onclick = startSOS;
 
 /* ===== ACT 60s ===== */
-document.getElementById("actBtn").onclick = () => {
+actBtn.onclick = () => {
+  if (!canUseTool("cognitive")) {
+    alert("Esta técnica está desactivada en tu nivel actual.");
+    return;
+  }
   const steps = [
     ["Observar", "Identifica lo que sientes (ansiedad, enojo, tensión). Ponerle nombre reduce su poder sobre ti.", "./assets/act.png"],
     ["Etiquetar", "Dite: 'Estoy teniendo el pensamiento de que...'. Esto crea distancia entre tú y el pensamiento.", "./assets/act.png"],
     ["Anclar", "Exhala lento 3 veces y siente el peso de tus pies. El cuerpo es tu ancla al presente.", "./assets/act.png"],
     ["Regresar", "El pensamiento sigue ahí como una nube, pero tú eliges tu siguiente paso pequeño.", "./assets/act.png"]
   ];
-  runSteps("Tomar Distancia (ACT)", steps);
+  runSteps("Tomar Distancia (ACT)", steps, "act");
 };
 
-/* ===== DBT 90s ===== */
-document.getElementById("dbtBtn").onclick = () => {
+/* ===== DBT 90s (no hielo) ===== */
+dbtBtn.onclick = () => {
+  const allowTemp = canUseTool("dbtTemp");
+  const tempStep = allowTemp
+    ? ["Temperatura suave", "Agua fría en cara/manos por 15s (incómodo, no doloroso). Sin hielo.", "./assets/dbt.png"]
+    : ["Temperatura omitida", "Esta parte se omite por seguridad. Continúa con respiración y reorientación.", "./assets/dbt.png"];
+
   const steps = [
     ["Respirar", "Inhala 4s, exhala 6s. Al exhalar más largo, le dices a tu cerebro que estás a salvo.", "./assets/dbt.png"],
-    ["Frío", "Si puedes, toca algo frío o lávate la cara. El cambio de temperatura bloquea la respuesta de estrés.", "./assets/dbt.png"],
+    tempStep,
     ["Re-orientar", "Mira 3 objetos y escucha 2 sonidos. Esto saca tu atención del caos interno al mundo externo.", "./assets/dbt.png"],
     ["Mínimo", "Vuelve con la tarea más pequeña posible. No intentes resolver todo ahora.", "./assets/dbt.png"]
   ];
-  runSteps("Cambio de Estado (DBT)", steps);
+  runSteps("Cambio de Estado (DBT)", steps, "dbt");
 };
 
-function runSteps(title, steps) {
+function runSteps(title, steps, toolName) {
   let i = 0;
   ovTitle.textContent = title;
   ovTapArea.style.display = "none";
+  logToolSession(toolName, "start", promptEMA("Antes de iniciar, de 0 a 10 ¿qué tan activado/a estás?"));
+
   if (steps[0][2]) {
     ovIllustration.style.display = "block";
     ovImg.src = steps[0][2];
@@ -149,6 +347,7 @@ function runSteps(title, steps) {
       ovIllustration.style.display = "none";
       ovNext.disabled = true;
       ovProgress.style.width = "100%";
+      logToolSession(toolName, "complete", null, promptEMA("Después del ejercicio, de 0 a 10 ¿qué tan activado/a estás?"));
       return;
     }
     ovStepTitle.textContent = steps[i][0];
@@ -175,20 +374,31 @@ function doVibrate(pattern) {
   if (navigator.vibrate) navigator.vibrate(pattern);
 }
 
+function promptEMA(msg) {
+  const val = window.prompt(msg, "5");
+  const n = Number(val);
+  if (Number.isNaN(n)) return null;
+  const ema = DB.get("emaEntries", []);
+  ema.push({ value: n, prompt: msg, at: new Date().toISOString() });
+  DB.set("emaEntries", ema);
+  return n;
+}
+
 breathToggle.onclick = () => {
   if (breathing) {
     clearInterval(bt); breathing = false;
     breathPhase.textContent = "Listo";
     [breathCircle, breathCircleInner].forEach(el => el.style.transform = "scale(1)");
     breathToggle.textContent = "Iniciar";
+    logToolSession("breath", "stop");
   } else {
     breathing = true; bI = 0;
     breathToggle.textContent = "Detener";
+    logToolSession("breath", "start", promptEMA("Antes de iniciar, de 0 a 10 ¿qué tan activado/a estás?"));
+
     const run = () => {
       const phase = bI % 4;
       breathPhase.textContent = phases[phase];
-
-      // Timer 4s
       let timeLeft = 4;
       breathTimer.textContent = `${timeLeft}s`;
       const timerInt = setInterval(() => {
@@ -200,15 +410,12 @@ breathToggle.onclick = () => {
         breathTimer.textContent = `${timeLeft}s`;
       }, 1000);
 
-      // Lógica de expansión
-      // 0: Inhala (crece), 1: Sostén (se queda grande), 2: Exhala (encoge), 3: Sostén (se queda pequeño)
       const scale = (phase === 0 || phase === 1) ? "scale(2.2)" : "scale(1)";
       [breathCircle, breathCircleInner].forEach(el => el.style.transform = scale);
 
-      // Háptica diferenciada
-      if (phase === 0) doVibrate(60); // Pulso suave al empezar
-      if (phase === 1) doVibrate([30, 50, 30]); // Doble pulso corto al sostener arriba
-      if (phase === 2) doVibrate(40); // Pulso muy suave al soltar
+      if (phase === 0) doVibrate(60);
+      if (phase === 1) doVibrate([30, 50, 30]);
+      if (phase === 2) doVibrate(40);
 
       bI++;
     };
@@ -231,7 +438,7 @@ function brown(ctx) {
     for (let i = 0; i < bufferSize; i++) {
       const white = Math.random() * 2 - 1;
       lastOut = (lastOut + 0.02 * white) / 1.02;
-      output[i] = lastOut * 3.5; // Ajuste compensación volumen
+      output[i] = lastOut * 3.5;
     }
   };
   return n;
@@ -248,13 +455,13 @@ noiseToggle.onclick = async () => {
     }
     const target = (noiseVol.value / 100) * 0.4;
     gain.gain.setValueAtTime(0, ctx.currentTime);
-    gain.gain.linearRampToValueAtTime(target, ctx.currentTime + 1.2); // Fade in suave
+    gain.gain.linearRampToValueAtTime(target, ctx.currentTime + 1.2);
     await ctx.resume();
     noiseOn = true;
     noiseToggle.textContent = "Apagar";
   } else {
     if (gain) {
-      gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.8); // Fade out suave
+      gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.8);
       setTimeout(() => { if (!noiseOn) ctx.suspend(); }, 800);
     }
     noiseOn = false;
@@ -267,3 +474,9 @@ noiseVol.oninput = () => {
     gain.gain.setTargetAtTime((noiseVol.value / 100) * 0.4, ctx.currentTime, 0.1);
   }
 };
+
+/* ===== Init ===== */
+initGate();
+maybeShowReminder();
+applyLevelControls();
+maybeShowCrisis();

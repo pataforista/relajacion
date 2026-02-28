@@ -12,6 +12,34 @@
 
 <body>
 
+  <div class="gate" id="disclaimerGate" aria-hidden="true">
+    <div class="gate-card">
+      <h1>Antes de comenzar</h1>
+      <p class="muted">Steam Out es una herramienta autogestiva de bienestar. No ofrece diagnóstico ni tratamiento.</p>
+      <div id="gateStep"></div>
+      <div class="row" style="margin-top: 14px;">
+        <button class="btn" id="gateBack" style="display:none;">Atrás</button>
+        <div class="grow"></div>
+        <button class="btn primary" id="gateNext">Continuar</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="crisis-screen" id="crisisScreen" aria-hidden="true">
+    <div class="card">
+      <h1>Conexión humana inmediata</h1>
+      <p>Estás en modo crisis. Esta app no sustituye apoyo profesional.</p>
+      <ul>
+        <li><a href="tel:112">Llamar a emergencias (112)</a></li>
+        <li><a href="tel:024">Línea 024 (España)</a></li>
+        <li><a href="tel:" id="safetyCall">Llamar a contacto de seguridad</a></li>
+      </ul>
+      <button class="btn" id="closeCrisis">Cerrar pantalla de crisis</button>
+    </div>
+  </div>
+
+  <button class="btn danger floating-crisis" id="crisisBtn">Botón de crisis</button>
+
   <header class="top">
     <div class="brand">Steam Out</div>
     <div class="row">
@@ -22,6 +50,9 @@
   </header>
 
   <main class="wrap">
+    <div class="card" id="reminderCard" style="display:none;">
+      <p><strong>Recordatorio:</strong> Esta app es de apoyo autogestivo, no terapia ni atención de crisis.</p>
+    </div>
 
     <section class="card hero">
       <div class="card-header">
@@ -64,6 +95,7 @@
     <section class="card">
       <h1>Cierre Cognitivo</h1>
       <p class="muted">Intervenciones breves para salir del bucle mental</p>
+      <div class="tiny" id="toolGateMsg" style="display:none; margin-bottom:8px;"></div>
       <div class="row stack">
         <button class="btn" id="actBtn">
           <span class="btn-title">Tomar Distancia (ACT)</span>

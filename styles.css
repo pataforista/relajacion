@@ -402,3 +402,57 @@ p {
   color: var(--muted);
   letter-spacing: 0.2px;
 }
+
+.gate,
+.crisis-screen {
+  position: fixed;
+  inset: 0;
+  background: var(--ov-bg);
+  backdrop-filter: blur(8px);
+  padding: 20px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1200;
+}
+
+.gate.show,
+.crisis-screen.show {
+  display: flex;
+}
+
+.gate-card,
+.crisis-screen .card {
+  width: min(560px, 100%);
+}
+
+.gate-step {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 14px;
+  margin-top: 10px;
+}
+
+.gate-step h2 {
+  font-size: 16px;
+  margin: 0 0 8px;
+}
+
+.gate-step ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.floating-crisis {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 1100;
+}
+
+body.crisis-active main,
+body.crisis-active .bottom-info,
+body.crisis-active .top {
+  filter: blur(2px);
+  pointer-events: none;
+}
