@@ -282,6 +282,19 @@ input[type="range"] {
 
 .module-card .danger { color: var(--danger); font-weight: 700; }
 
+.ema-box {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 12px;
+  background: color-mix(in srgb, var(--card) 90%, white 10%);
+}
+
+.hidden { display: none !important; }
+
+#stateTools .btn { width: 100%; }
+
+
 .bottom-info {
   max-width: 760px;
   margin: 0 auto 24px;
