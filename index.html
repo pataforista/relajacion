@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <meta name="theme-color" content="#E7E1D6" />
+  <meta name="theme-color" content="#f8e8ea" />
   <link rel="manifest" href="./manifest.webmanifest" />
   <link rel="stylesheet" href="./styles.css" />
   <title>Steam Out</title>
@@ -28,11 +28,10 @@
   <div class="crisis-screen" id="crisisScreen" aria-hidden="true">
     <div class="card">
       <h1>Conexión humana inmediata</h1>
-      <p>Estás en modo crisis. Esta app no sustituye apoyo profesional.</p>
+      <p>Si hay riesgo inminente, no uses la app y busca ayuda profesional o de emergencia.</p>
       <ul>
         <li><a href="tel:112">Llamar a emergencias (112)</a></li>
         <li><a href="tel:024">Línea 024 (España)</a></li>
-        <li><a href="tel:" id="safetyCall">Llamar a contacto de seguridad</a></li>
       </ul>
       <button class="btn" id="closeCrisis">Cerrar pantalla de crisis</button>
     </div>
@@ -52,6 +51,10 @@
   <main class="wrap">
     <div class="card" id="reminderCard" style="display:none;">
       <p><strong>Recordatorio:</strong> Esta app es de apoyo autogestivo, no terapia ni atención de crisis.</p>
+    </div>
+
+    <div class="card module-card">
+      <p class="tiny" id="moduleStatus">Verificando módulos…</p>
     </div>
 
     <section class="card hero">
@@ -95,7 +98,6 @@
     <section class="card">
       <h1>Cierre Cognitivo</h1>
       <p class="muted">Intervenciones breves para salir del bucle mental</p>
-      <div class="tiny" id="toolGateMsg" style="display:none; margin-bottom:8px;"></div>
       <div class="row stack">
         <button class="btn" id="actBtn">
           <span class="btn-title">Tomar Distancia (ACT)</span>
@@ -106,7 +108,7 @@
           <span class="btn-sub">Fisiología y enfoque · 90s</span>
         </button>
       </div>
-      <p class="tiny muted" style="margin-top:12px">No guarda datos. Uso 100% privado y local.</p>
+      <p class="tiny muted" style="margin-top:12px">No solicita datos personales. Uso 100% privado y local.</p>
     </section>
 
   </main>
@@ -122,7 +124,6 @@
     </div>
   </footer>
 
-  <!-- Overlay único reutilizable -->
   <div class="overlay" id="overlay" aria-hidden="true">
     <div class="overlayCard">
       <div class="overlayTop">
