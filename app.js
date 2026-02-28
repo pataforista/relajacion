@@ -69,12 +69,9 @@ function renderGateStep() {
 }
 
 function completeGate() {
-  const q1 = document.querySelector("input[name='q1']:checked")?.value;
   const q2 = document.querySelector("input[name='q2']:checked")?.value;
-  if (q1 !== "no" || q2 !== "yes") {
-    onboarding.step = 0;
-    renderGateStep();
-    alert("Repasemos los límites para un uso seguro.");
+  if (q2 !== "yes") {
+    alert("Por favor confirma que comprendes el límite para finalizar.");
     return;
   }
 
@@ -91,6 +88,13 @@ gateBack.onclick = () => {
 
 gateNext.onclick = () => {
   if (onboarding.step < gateScreens.length - 1) {
+    if (onboarding.step === 1) {
+      const q1 = document.querySelector("input[name='q1']:checked")?.value;
+      if (q1 !== "no") {
+        alert("Por favor selecciona la respuesta correcta para continuar.");
+        return;
+      }
+    }
     onboarding.step += 1;
     renderGateStep();
     return;
@@ -118,6 +122,10 @@ function maybeShowReminder() {
     DB.set("lastDisclaimerReminder", new Date().toISOString());
   }
 }
+
+document.getElementById("closeReminder").onclick = () => {
+  document.getElementById("reminderCard").style.display = "none";
+};
 
 /* ===== Crisis mode ===== */
 const crisisBtn = document.getElementById("crisisBtn");
@@ -172,6 +180,7 @@ function closeOverlay() {
   emaDistress.value = "";
   emaBox.classList.add("hidden");
   ovNext.disabled = false;
+  ovStop.disabled = false;
   if (document.activeElement) document.activeElement.blur();
 }
 ovClose.onclick = closeOverlay;
