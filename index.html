@@ -80,6 +80,16 @@
       </div>
     </section>
 
+    <section class="card" id="checkTrackCard">
+      <div class="card-header">
+        <h1>Seguimiento simple</h1>
+        <span class="badge">No clínico</span>
+      </div>
+      <p class="muted">Haz check-in y check-out en un pop-up breve con barras visuales.</p>
+      <button class="btn primary" id="checkPopupBtn">Abrir check-in / check-out</button>
+      <p class="tiny muted" id="checkSummary">Aún no hay suficientes registros para mostrar evolución.</p>
+    </section>
+
     <details class="card details-card" id="advancedSettings">
       <summary>Ajustes avanzados (normalmente no hace falta tocar esto)</summary>
       <div class="details-content">
@@ -194,27 +204,61 @@
     </div>
   </footer>
 
+  <div class="m3-modal" id="checkModal" aria-hidden="true">
+    <div class="m3-sheet">
+      <div class="overlayTop">
+        <div>
+          <div class="overlayTitle">Check-in / Check-out</div>
+          <p class="tiny muted" style="margin:4px 0 0">Escalas visuales 1–10 para seguimiento personal.</p>
+        </div>
+        <button class="btn ghost" id="checkModalClose">Cerrar</button>
+      </div>
+
+      <div class="m3-segmented" role="tablist" aria-label="Tipo de registro">
+        <button class="m3-segment active" id="openCheckinTab" type="button">Check-in</button>
+        <button class="m3-segment" id="openCheckoutTab" type="button">Check-out</button>
+      </div>
+
+      <div class="check-block" id="checkinBlock">
+        <p class="tiny muted">Antes de usar herramientas.</p>
+        <label>Ansiedad <span id="checkinAnxietyValue">5</span>
+          <input id="checkinAnxiety" type="range" min="1" max="10" value="5" />
+        </label>
+        <label>Malestar <span id="checkinDistressValue">5</span>
+          <input id="checkinDistress" type="range" min="1" max="10" value="5" />
+        </label>
+        <label>Tristeza <span id="checkinSadnessValue">5</span>
+          <input id="checkinSadness" type="range" min="1" max="10" value="5" />
+        </label>
+        <button class="btn primary" id="saveCheckinBtn">Guardar check-in</button>
+      </div>
+
+      <div class="check-block hidden" id="checkoutBlock">
+        <p class="tiny muted">Al terminar, para valorar utilidad.</p>
+        <label>Ansiedad <span id="checkoutAnxietyValue">5</span>
+          <input id="checkoutAnxiety" type="range" min="1" max="10" value="5" />
+        </label>
+        <label>Malestar <span id="checkoutDistressValue">5</span>
+          <input id="checkoutDistress" type="range" min="1" max="10" value="5" />
+        </label>
+        <label>Tristeza <span id="checkoutSadnessValue">5</span>
+          <input id="checkoutSadness" type="range" min="1" max="10" value="5" />
+        </label>
+        <label>Utilidad percibida <span id="checkoutUsefulnessValue">5</span>
+          <input id="checkoutUsefulness" type="range" min="1" max="10" value="5" />
+        </label>
+        <button class="btn primary" id="saveCheckoutBtn">Guardar check-out</button>
+      </div>
+
+      <p class="tiny" id="checkFeedback">Tus registros quedan guardados solo en este dispositivo.</p>
+    </div>
+  </div>
+
   <div class="overlay" id="overlay" aria-hidden="true">
     <div class="overlayCard">
       <div class="overlayTop">
         <div class="overlayTitle" id="ovTitle">SOS</div>
         <button class="btn ghost" id="ovClose">Cerrar</button>
-      </div>
-
-      <div class="ema-box" id="emaBox">
-        <div class="row stack">
-          <label>Ansiedad/activación (0-10)
-            <input id="emaActivation" type="number" min="0" max="10" step="1" />
-          </label>
-          <label>Malestar (0-10)
-            <input id="emaDistress" type="number" min="0" max="10" step="1" />
-          </label>
-        </div>
-        <div class="row" style="margin-top:10px">
-          <button class="btn ghost" id="emaSkip">Omitir por ahora</button>
-          <div class="grow"></div>
-          <button class="btn" id="emaContinue">Continuar</button>
-        </div>
       </div>
 
       <div id="ovIllustration" style="text-align: center; margin-bottom: 12px; display: none;">
