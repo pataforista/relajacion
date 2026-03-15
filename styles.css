@@ -57,6 +57,23 @@ body {
   z-index: 100;
 }
 
+.app-feedback {
+  position: sticky;
+  top: 66px;
+  z-index: 101;
+  margin: 8px auto 0;
+  max-width: 760px;
+  padding: 0 20px;
+  min-height: 24px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.app-feedback.show {
+  color: var(--accent);
+  font-weight: 700;
+}
+
 .brand {
   font-weight: 900;
   letter-spacing: 0.7px;
@@ -378,6 +395,11 @@ input[type="range"] {
 .hidden { display: none !important; }
 
 #stateTools .btn { width: 100%; }
+
+#mobileSupportCard label.row {
+  margin-bottom: 8px;
+  align-items: center;
+}
 
 
 .bottom-info {
