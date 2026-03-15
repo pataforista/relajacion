@@ -143,7 +143,7 @@ function setCrisisScreen(show) {
 crisisBtn.onclick = () => setCrisisScreen(true);
 closeCrisis.onclick = () => setCrisisScreen(false);
 
-/* ===== Overlay base + EMA ===== */
+/* ===== Overlay base ===== */
 const overlay = document.getElementById("overlay");
 const ovTitle = document.getElementById("ovTitle");
 const ovStepTitle = document.getElementById("ovStepTitle");
@@ -157,14 +157,6 @@ const ovClose = document.getElementById("ovClose");
 const ovIllustration = document.getElementById("ovIllustration");
 const ovImg = document.getElementById("ovImg");
 const ovStop = document.getElementById("ovStop");
-const emaBox = document.getElementById("emaBox");
-const emaActivation = document.getElementById("emaActivation");
-const emaDistress = document.getElementById("emaDistress");
-const emaContinue = document.getElementById("emaContinue");
-const emaSkip = document.getElementById("emaSkip");
-
-let currentTool = "";
-let pendingStart = null;
 
 function openOverlay() {
   overlay.classList.add("show");
@@ -176,10 +168,6 @@ function openOverlay() {
 function closeOverlay() {
   overlay.classList.remove("show");
   overlay.setAttribute("aria-hidden", "true");
-  pendingStart = null;
-  emaActivation.value = "";
-  emaDistress.value = "";
-  emaBox.classList.add("hidden");
   ovNext.disabled = false;
   ovStop.disabled = false;
   if (document.activeElement) document.activeElement.blur();
@@ -187,65 +175,18 @@ function closeOverlay() {
 ovClose.onclick = closeOverlay;
 ovStop.onclick = () => runUniversalStop();
 
-function parseEMAInput(el) {
-  const n = Number(el.value);
-  if (Number.isNaN(n) || n < 0 || n > 10) return null;
-  return Math.round(n);
-}
-
-function saveEMA(tool, phase) {
-  const activation = parseEMAInput(emaActivation);
-  const distress = parseEMAInput(emaDistress);
-  if (activation === null || distress === null) {
-    alert("Ingresa EMA válidos entre 0 y 10 para continuar.");
-    return false;
-  }
-
-  const list = DB.get("emaLogs", []);
-  list.push({ tool, phase, activation, distress, at: new Date().toISOString() });
-  DB.set("emaLogs", list);
-  return true;
-}
-
-function startWithEMA(tool, startFn) {
-  currentTool = tool;
-  pendingStart = startFn;
+function startTool(tool, startFn) {
   openOverlay();
+  ovTitle.textContent = tool;
+  ovStepTitle.textContent = "Preparando";
+  ovHint.textContent = "Comenzando ejercicio breve...";
   ovTapArea.style.display = "none";
-  ovStepTitle.textContent = "EMA pre";
-  ovHint.textContent = "Antes de empezar, indica tus niveles actuales.";
-  emaBox.classList.remove("hidden");
-  ovNext.style.display = "none";
+  ovNext.style.display = "";
   ovIllustration.style.display = "none";
+  startFn();
 }
-
-function continueWithoutEMA() {
-  if (!pendingStart) return;
-  emaBox.classList.add("hidden");
-  ovNext.style.display = "";
-  pendingStart();
-}
-
-emaContinue.onclick = () => {
-  if (!pendingStart) return;
-  if (!saveEMA(currentTool, "pre")) return;
-  emaBox.classList.add("hidden");
-  ovNext.style.display = "";
-  pendingStart();
-};
-
-emaSkip.onclick = continueWithoutEMA;
 
 function finishTool(tool, message) {
-  const post = prompt("Opcional · EMA post (A,M). Ejemplo: 3,4. Si no quieres, pulsa cancelar.");
-  if (post) {
-    const [a, d] = post.split(",").map((v) => Number(v?.trim()));
-    if (!Number.isNaN(a) && !Number.isNaN(d) && a >= 0 && a <= 10 && d >= 0 && d <= 10) {
-      const list = DB.get("emaLogs", []);
-      list.push({ tool, phase: "post", activation: Math.round(a), distress: Math.round(d), at: new Date().toISOString() });
-      DB.set("emaLogs", list);
-    }
-  }
   ovStepTitle.textContent = "Listo";
   ovHint.textContent = message;
   ovIllustration.style.display = "none";
@@ -358,7 +299,7 @@ ovTapArea.onclick = () => {
 };
 
 function startSOS() {
-  startWithEMA("sos", () => {
+  startTool("SOS", () => {
     ovTitle.textContent = "SOS";
     ovStop.disabled = false;
     ovNext.style.display = "";
@@ -415,7 +356,7 @@ dbtBtn.onclick = () => {
 };
 
 function runSteps(title, steps, toolName) {
-  startWithEMA(toolName, () => {
+  startTool(title, () => {
     let i = 0;
     ovTitle.textContent = title;
     ovStop.disabled = false;
@@ -559,7 +500,7 @@ breathToggle.onclick = () => {
     breathMode.value = "extended";
   }
 
-  startWithEMA("breath", () => {
+  startTool("Respiración", () => {
     breathing = true;
     bI = 0;
     breathToggle.textContent = "Detener";
@@ -667,6 +608,138 @@ function renderStateMenu() {
 
 stateSelect.onchange = renderStateMenu;
 
+/* ===== Check-in / Check-out tracking ===== */
+const checkPopupBtn = document.getElementById("checkPopupBtn");
+const checkModal = document.getElementById("checkModal");
+const checkModalClose = document.getElementById("checkModalClose");
+const openCheckinTab = document.getElementById("openCheckinTab");
+const openCheckoutTab = document.getElementById("openCheckoutTab");
+const checkinBlock = document.getElementById("checkinBlock");
+const checkoutBlock = document.getElementById("checkoutBlock");
+const checkFeedback = document.getElementById("checkFeedback");
+const checkSummary = document.getElementById("checkSummary");
+const saveCheckinBtn = document.getElementById("saveCheckinBtn");
+const saveCheckoutBtn = document.getElementById("saveCheckoutBtn");
+
+const metricConfig = {
+  checkinAnxiety: "checkinAnxietyValue",
+  checkinDistress: "checkinDistressValue",
+  checkinSadness: "checkinSadnessValue",
+  checkoutAnxiety: "checkoutAnxietyValue",
+  checkoutDistress: "checkoutDistressValue",
+  checkoutSadness: "checkoutSadnessValue",
+  checkoutUsefulness: "checkoutUsefulnessValue"
+};
+
+
+function openCheckModal(defaultTab = "checkin") {
+  checkModal.classList.add("show");
+  checkModal.setAttribute("aria-hidden", "false");
+  setCheckTab(defaultTab);
+}
+
+function closeCheckModal() {
+  checkModal.classList.remove("show");
+  checkModal.setAttribute("aria-hidden", "true");
+}
+
+function setCheckTab(tab) {
+  const showCheckin = tab === "checkin";
+  checkinBlock.classList.toggle("hidden", !showCheckin);
+  checkoutBlock.classList.toggle("hidden", showCheckin);
+  openCheckinTab.classList.toggle("active", showCheckin);
+  openCheckoutTab.classList.toggle("active", !showCheckin);
+}
+
+checkPopupBtn.onclick = () => openCheckModal("checkin");
+checkModalClose.onclick = closeCheckModal;
+openCheckinTab.onclick = () => setCheckTab("checkin");
+openCheckoutTab.onclick = () => setCheckTab("checkout");
+checkModal.onclick = (event) => {
+  if (event.target === checkModal) closeCheckModal();
+};
+window.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && checkModal.classList.contains("show")) {
+    closeCheckModal();
+  }
+});
+
+Object.entries(metricConfig).forEach(([inputId, valueId]) => {
+  const input = document.getElementById(inputId);
+  const output = document.getElementById(valueId);
+  const syncValue = () => {
+    output.textContent = input.value;
+  };
+  input.addEventListener("input", syncValue);
+  syncValue();
+});
+
+function getCheckValues(prefix) {
+  return {
+    anxiety: Number(document.getElementById(`${prefix}Anxiety`).value),
+    distress: Number(document.getElementById(`${prefix}Distress`).value),
+    sadness: Number(document.getElementById(`${prefix}Sadness`).value)
+  };
+}
+
+function maxEmotionalValue(values) {
+  return Math.max(values.anxiety, values.distress, values.sadness);
+}
+
+function showCheckSummary() {
+  const checkins = DB.get("checkins", []);
+  const checkouts = DB.get("checkouts", []);
+
+  if (!checkins.length || !checkouts.length) {
+    checkSummary.textContent = "Aún no hay suficientes registros para mostrar evolución.";
+    return;
+  }
+
+  const avg = (arr, key) => arr.reduce((acc, item) => acc + item[key], 0) / arr.length;
+  const summaryText = `Promedio check-in → ansiedad ${avg(checkins, "anxiety").toFixed(1)}, malestar ${avg(checkins, "distress").toFixed(1)}, tristeza ${avg(checkins, "sadness").toFixed(1)} · Promedio check-out → ansiedad ${avg(checkouts, "anxiety").toFixed(1)}, malestar ${avg(checkouts, "distress").toFixed(1)}, tristeza ${avg(checkouts, "sadness").toFixed(1)}, utilidad ${avg(checkouts, "usefulness").toFixed(1)}.`;
+  checkSummary.textContent = summaryText;
+}
+
+function suggestProfessionalContact(type) {
+  if (type === "checkout") {
+    alert("Tus valores en el check-out son altos (9-10). Te recomendamos con insistencia contactar a una/un profesional de salud mental hoy. Puedes seguir usando la app como apoyo, pero busca acompañamiento humano.");
+    alert("Importante: si esto se mantiene o empeora, prioriza hablar con un profesional o servicio de urgencias de tu zona.");
+    return;
+  }
+
+  alert("Tus valores en el check-in son altos (9-10). Te sugerimos contactar a una/un profesional de salud mental. Puedes continuar usando la app como apoyo.");
+}
+
+saveCheckinBtn.onclick = () => {
+  const values = getCheckValues("checkin");
+  const logs = DB.get("checkins", []);
+  logs.push({ ...values, at: new Date().toISOString() });
+  DB.set("checkins", logs);
+
+  if (maxEmotionalValue(values) > 8) {
+    suggestProfessionalContact("checkin");
+  }
+
+  checkFeedback.textContent = "Check-in guardado. Ahora puedes usar una herramienta breve y luego hacer check-out.";
+  showCheckSummary();
+  setCheckTab("checkout");
+};
+
+saveCheckoutBtn.onclick = () => {
+  const values = getCheckValues("checkout");
+  const usefulness = Number(document.getElementById("checkoutUsefulness").value);
+  const logs = DB.get("checkouts", []);
+  logs.push({ ...values, usefulness, at: new Date().toISOString() });
+  DB.set("checkouts", logs);
+
+  if (maxEmotionalValue(values) > 8) {
+    suggestProfessionalContact("checkout");
+  }
+
+  checkFeedback.textContent = "Check-out guardado. Gracias: esto permite ver si la app te está sirviendo en el tiempo.";
+  showCheckSummary();
+};
+
 /* ===== Module integrity check ===== */
 function verifyModules() {
   const moduleStatus = document.getElementById("moduleStatus");
@@ -679,7 +752,9 @@ function verifyModules() {
     "crisisBtn",
     "overlay",
     "careLevel",
-    "stateSelect"
+    "stateSelect",
+    "checkPopupBtn",
+    "checkModal"
   ];
 
   const missing = requiredIds.filter((id) => !document.getElementById(id));
@@ -697,4 +772,5 @@ maybeShowReminder();
 careLevel.value = String(DB.get("careLevel", 1));
 applyCareLevel();
 renderStateMenu();
+showCheckSummary();
 verifyModules();

@@ -1,14 +1,14 @@
 :root {
   --bg: #fff7f2;
   --grid: rgba(234, 162, 199, 0.25);
-  --card: #fffdfc;
+  --card: #fffbff;
   --text: #3b2b36;
   --muted: #7f6473;
-  --line: #efc7dd;
-  --accent: #6fc8d8;
-  --accent-2: #d784c1;
+  --line: #d7cbe6;
+  --accent: #6750a4;
+  --accent-2: #7f67be;
   --danger: #c95e7f;
-  --shadow: 0 14px 0 #f2bfd7, 0 24px 30px rgba(98, 53, 84, 0.18);
+  --shadow: 0 2px 8px rgba(33, 26, 53, 0.12);
   --r: 18px;
   --font: "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
   --ov-bg: rgba(57, 20, 47, 0.35);
@@ -17,14 +17,14 @@
 body[data-theme="dark"] {
   --bg: #251627;
   --grid: rgba(198, 122, 174, 0.18);
-  --card: #342238;
+  --card: #1f1b24;
   --text: #f9eaf4;
   --muted: #c6a7bc;
-  --line: #7e4d73;
-  --accent: #72d2e1;
-  --accent-2: #de85bf;
+  --line: #4d415f;
+  --accent: #d0bcff;
+  --accent-2: #b69df8;
   --danger: #d36f8c;
-  --shadow: 0 14px 0 #4f2d49, 0 22px 30px rgba(0, 0, 0, 0.35);
+  --shadow: 0 2px 10px rgba(0, 0, 0, 0.45);
   --ov-bg: rgba(0, 0, 0, 0.6);
 }
 
@@ -131,6 +131,7 @@ body {
 }
 
 h1 { font-size: 1.2rem; margin: 0 0 6px; }
+h2 { font-size: 1rem; margin: 0 0 6px; }
 p { margin: 0 0 12px; }
 .muted { color: var(--muted); font-size: 14px; }
 .tiny { font-size: 12px; line-height: 1.35; }
@@ -141,7 +142,7 @@ p { margin: 0 0 12px; }
   border: 2px solid var(--line);
   background: var(--card);
   padding: 11px 14px;
-  border-radius: 14px;
+  border-radius: 20px;
   cursor: pointer;
   font-weight: 700;
   font-size: 14px;
@@ -162,9 +163,9 @@ p { margin: 0 0 12px; }
 }
 
 .btn.primary {
-  background: linear-gradient(130deg, var(--accent-2), var(--accent));
+  background: var(--accent);
   color: #fff;
-  border: none;
+  border: 1px solid transparent;
   align-items: center;
   justify-content: center;
 }
@@ -308,12 +309,70 @@ input[type="range"] {
 
 .module-card .danger { color: var(--danger); font-weight: 700; }
 
-.ema-box {
+
+
+.m3-modal {
+  position: fixed;
+  inset: 0;
+  background: color-mix(in srgb, var(--bg) 35%, #000 65%);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 1300;
+}
+
+.m3-modal.show { display: flex; }
+
+.m3-sheet {
+  width: min(620px, 100%);
+  max-height: 92vh;
+  overflow: auto;
+  background: var(--card);
   border: 1px solid var(--line);
-  border-radius: 12px;
-  padding: 12px;
-  margin-bottom: 12px;
-  background: color-mix(in srgb, var(--card) 90%, white 10%);
+  border-radius: 28px;
+  box-shadow: var(--shadow);
+  padding: 18px;
+}
+
+.m3-segmented {
+  display: inline-flex;
+  padding: 4px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--card) 88%, var(--accent) 12%);
+  margin: 10px 0 12px;
+}
+
+.m3-segment {
+  border: none;
+  background: transparent;
+  color: var(--text);
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.m3-segment.active {
+  background: var(--accent);
+  color: #fff;
+}
+
+.check-block {
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 14px;
+  background: color-mix(in srgb, var(--card) 92%, var(--accent) 8%);
+}
+
+.check-block label {
+  display: block;
+  margin-bottom: 10px;
+}
+
+#checkTrackCard .btn {
+  align-items: center;
 }
 
 .hidden { display: none !important; }
