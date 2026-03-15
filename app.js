@@ -25,6 +25,23 @@ window.addEventListener("online", updateNet);
 window.addEventListener("offline", updateNet);
 updateNet();
 
+/* ===== Global feedback ===== */
+const appFeedback = document.getElementById("appFeedback");
+let feedbackTimeout = null;
+
+let visualFeedbackEnabled = DB.get("visualFeedbackEnabled", true);
+
+function announceFeedback(message, vibratePattern = null, critical = false) {
+  if (!visualFeedbackEnabled && !critical) {
+    return;
+  }
+  appFeedback.textContent = message;
+  appFeedback.classList.add("show");
+  clearTimeout(feedbackTimeout);
+  feedbackTimeout = setTimeout(() => appFeedback.classList.remove("show"), 2200);
+  if (vibratePattern) doVibrate(vibratePattern);
+}
+
 /* ===== Theme toggle ===== */
 const themeToggle = document.getElementById("themeToggle");
 const body = document.body;
@@ -136,7 +153,10 @@ function setCrisisScreen(show) {
   crisisScreen.classList.toggle("show", show);
   body.classList.toggle("crisis-active", show);
   if (show) {
+    announceFeedback("Modo crisis activado. Prioriza contacto humano inmediato.", [80, 60, 80], true);
     DB.set("crisisEvents", [...DB.get("crisisEvents", []), { at: new Date().toISOString(), source: "manual" }]);
+  } else {
+    announceFeedback("Pantalla de crisis cerrada.");
   }
 }
 
@@ -193,6 +213,7 @@ function finishTool(tool, message) {
   ovNext.disabled = true;
   ovProgress.style.width = "100%";
   logToolSession(tool, "complete");
+  announceFeedback("Ejercicio completado. Registra cómo te sientes ahora.", 35);
 }
 
 function runUniversalStop() {
@@ -228,6 +249,20 @@ const noiseToggle = document.getElementById("noiseToggle");
 const quickCalmBtn = document.getElementById("quickCalmBtn");
 const quickFocusBtn = document.getElementById("quickFocusBtn");
 const quickSleepBtn = document.getElementById("quickSleepBtn");
+const hapticToggle = document.getElementById("hapticToggle");
+const voiceToggle = document.getElementById("voiceToggle");
+const wakeLockBtn = document.getElementById("wakeLockBtn");
+const mobilePulseBtn = document.getElementById("mobilePulseBtn");
+const mobileSupportHint = document.getElementById("mobileSupportHint");
+const feedbackToggle = document.getElementById("feedbackToggle");
+const comfortModeToggle = document.getElementById("comfortModeToggle");
+const resetComfortBtn = document.getElementById("resetComfortBtn");
+
+let hapticEnabled = DB.get("hapticEnabled", true);
+let voiceEnabled = DB.get("voiceEnabled", false);
+let comfortModeEnabled = DB.get("comfortModeEnabled", false);
+let wakeLock = null;
+let wakeLockRequested = false;
 
 function applyCareLevel() {
   const level = Number(careLevel.value);
@@ -434,7 +469,51 @@ const breathPrograms = {
 };
 
 function doVibrate(pattern) {
+  if (!hapticEnabled) return;
   if (navigator.vibrate) navigator.vibrate(pattern);
+}
+
+function speak(text) {
+  if (!voiceEnabled || !window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = "es-ES";
+  utterance.rate = 0.95;
+  window.speechSynthesis.speak(utterance);
+}
+
+async function requestWakeLock() {
+  if (!("wakeLock" in navigator)) {
+    mobileSupportHint.textContent = "Tu dispositivo no soporta bloqueo de pantalla activa (Wake Lock).";
+    return false;
+  }
+
+  try {
+    wakeLock = await navigator.wakeLock.request("screen");
+    wakeLockRequested = true;
+    wakeLockBtn.textContent = "Mantener pantalla encendida: ON";
+    announceFeedback("Pantalla activa para acompañar la práctica.");
+    wakeLock.addEventListener("release", () => {
+      wakeLock = null;
+      wakeLockBtn.textContent = "Mantener pantalla encendida: OFF";
+    });
+    return true;
+  } catch {
+    mobileSupportHint.textContent = "No se pudo activar pantalla encendida. Revisa batería/permisos.";
+    return false;
+  }
+}
+
+async function releaseWakeLock() {
+  wakeLockRequested = false;
+  if (!wakeLock) {
+    wakeLockBtn.textContent = "Mantener pantalla encendida: OFF";
+    return;
+  }
+
+  await wakeLock.release();
+  wakeLock = null;
+  wakeLockBtn.textContent = "Mantener pantalla encendida: OFF";
 }
 
 function stopBreathing(silent = false) {
@@ -445,8 +524,12 @@ function stopBreathing(silent = false) {
   breathTimer.textContent = "0s";
   [breathCircle, breathCircleInner].forEach((el) => el.style.transform = "scale(1)");
   breathToggle.textContent = "Iniciar";
+  if (window.speechSynthesis) {
+    window.speechSynthesis.cancel();
+  }
   if (!silent) {
     logToolSession("breath", "stop");
+    announceFeedback("Respiración detenida.");
   }
 }
 
@@ -459,6 +542,7 @@ function runBreathProgram() {
 
   [breathCircle, breathCircleInner].forEach((el) => el.style.transform = phase.scale);
   doVibrate(phase.vibrate);
+  speak(phase.label);
 
   clearInterval(phaseTime);
   phaseTime = setInterval(() => {
@@ -505,6 +589,7 @@ breathToggle.onclick = () => {
     bI = 0;
     breathToggle.textContent = "Detener";
     logToolSession("breath", "start");
+    announceFeedback(`Inicia ${breathPrograms[breathMode.value].name}. Sigue el ritmo.`, 30);
 
     runBreathProgram();
   });
@@ -544,6 +629,7 @@ noiseToggle.onclick = async () => {
     await ctx.resume();
     noiseOn = true;
     noiseToggle.textContent = "Apagar";
+    announceFeedback("Ruido marrón activado.");
   } else {
     if (gain) {
       gain.gain.linearRampToValueAtTime(0, ctx.currentTime + 0.8);
@@ -553,6 +639,7 @@ noiseToggle.onclick = async () => {
     }
     noiseOn = false;
     noiseToggle.textContent = "Encender";
+    announceFeedback("Ruido marrón apagado.");
   }
 };
 
@@ -721,6 +808,7 @@ saveCheckinBtn.onclick = () => {
   }
 
   checkFeedback.textContent = "Check-in guardado. Ahora puedes usar una herramienta breve y luego hacer check-out.";
+  announceFeedback("Check-in guardado correctamente.", 20);
   showCheckSummary();
   setCheckTab("checkout");
 };
@@ -737,8 +825,121 @@ saveCheckoutBtn.onclick = () => {
   }
 
   checkFeedback.textContent = "Check-out guardado. Gracias: esto permite ver si la app te está sirviendo en el tiempo.";
+  announceFeedback("Check-out guardado. Buen trabajo cerrando el ciclo.", 20);
   showCheckSummary();
 };
+
+/* ===== Mobile support ===== */
+hapticToggle.checked = hapticEnabled;
+voiceToggle.checked = voiceEnabled;
+feedbackToggle.checked = visualFeedbackEnabled;
+comfortModeToggle.checked = comfortModeEnabled;
+
+function syncComfortControls() {
+  hapticToggle.checked = hapticEnabled;
+  voiceToggle.checked = voiceEnabled;
+  feedbackToggle.checked = visualFeedbackEnabled;
+  comfortModeToggle.checked = comfortModeEnabled;
+
+  const disableAdvanced = comfortModeEnabled;
+  voiceToggle.disabled = disableAdvanced;
+  hapticToggle.disabled = disableAdvanced;
+  mobilePulseBtn.disabled = disableAdvanced;
+
+  if (disableAdvanced && wakeLockRequested) {
+    void releaseWakeLock();
+  }
+}
+
+function applyComfortMode(enabled, notify = true) {
+  comfortModeEnabled = enabled;
+  DB.set("comfortModeEnabled", enabled);
+
+  if (enabled) {
+    visualFeedbackEnabled = false;
+    hapticEnabled = false;
+    voiceEnabled = false;
+    DB.set("visualFeedbackEnabled", false);
+    DB.set("hapticEnabled", false);
+    DB.set("voiceEnabled", false);
+    if (notify) {
+      announceFeedback("Modo comodidad alta activado: estímulos reducidos.", null, true);
+    }
+  }
+
+  syncComfortControls();
+}
+
+hapticToggle.onchange = () => {
+  hapticEnabled = hapticToggle.checked;
+  DB.set("hapticEnabled", hapticEnabled);
+  announceFeedback(hapticEnabled ? "Vibración guiada activada." : "Vibración guiada desactivada.");
+};
+
+voiceToggle.onchange = () => {
+  voiceEnabled = voiceToggle.checked;
+  DB.set("voiceEnabled", voiceEnabled);
+  announceFeedback(voiceEnabled ? "Guía por voz activada." : "Guía por voz desactivada.");
+};
+
+feedbackToggle.onchange = () => {
+  visualFeedbackEnabled = feedbackToggle.checked;
+  DB.set("visualFeedbackEnabled", visualFeedbackEnabled);
+  announceFeedback(visualFeedbackEnabled ? "Mensajes visuales activados." : "Mensajes visuales desactivados.", null, true);
+};
+
+comfortModeToggle.onchange = () => {
+  applyComfortMode(comfortModeToggle.checked);
+  if (!comfortModeToggle.checked) {
+    announceFeedback("Modo comodidad alta desactivado. Personaliza según preferencia.", null, true);
+  }
+};
+
+resetComfortBtn.onclick = () => {
+  comfortModeEnabled = false;
+  visualFeedbackEnabled = true;
+  hapticEnabled = true;
+  voiceEnabled = false;
+  DB.set("comfortModeEnabled", comfortModeEnabled);
+  DB.set("visualFeedbackEnabled", visualFeedbackEnabled);
+  DB.set("hapticEnabled", hapticEnabled);
+  DB.set("voiceEnabled", voiceEnabled);
+  syncComfortControls();
+  announceFeedback("Configuración recomendada restaurada.", 20, true);
+};
+
+wakeLockBtn.onclick = async () => {
+  if (wakeLockRequested) {
+    await releaseWakeLock();
+    announceFeedback("Pantalla encendida continua desactivada.");
+    return;
+  }
+
+  await requestWakeLock();
+};
+
+mobilePulseBtn.onclick = () => {
+  if (comfortModeEnabled) {
+    announceFeedback("Modo comodidad alta activo: pausa háptica deshabilitada.", null, true);
+    return;
+  }
+  if (!navigator.vibrate) {
+    announceFeedback("Tu dispositivo no soporta vibración.");
+    return;
+  }
+  doVibrate([120, 140, 120, 260, 120, 140, 120]);
+  announceFeedback("Pausa háptica iniciada: acompasa respiración con el pulso.");
+};
+
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState !== "visible") return;
+  if (wakeLockRequested) requestWakeLock();
+});
+
+if (comfortModeEnabled) {
+  applyComfortMode(true, false);
+}
+syncComfortControls();
 
 /* ===== Module integrity check ===== */
 function verifyModules() {
@@ -754,7 +955,15 @@ function verifyModules() {
     "careLevel",
     "stateSelect",
     "checkPopupBtn",
-    "checkModal"
+    "checkModal",
+    "appFeedback",
+    "feedbackToggle",
+    "comfortModeToggle",
+    "hapticToggle",
+    "voiceToggle",
+    "wakeLockBtn",
+    "mobilePulseBtn",
+    "resetComfortBtn"
   ];
 
   const missing = requiredIds.filter((id) => !document.getElementById(id));

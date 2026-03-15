@@ -48,6 +48,8 @@
     </div>
   </header>
 
+  <div id="appFeedback" class="app-feedback" role="status" aria-live="polite" aria-atomic="true"></div>
+
   <main class="wrap">
     <div class="card" id="reminderCard" style="display:none;">
       <p><strong>Recordatorio:</strong> Esta app es de apoyo autogestivo, no terapia ni atención de crisis.</p>
@@ -146,6 +148,36 @@
         <div class="circle" id="breathCircle"></div>
         <div class="circle-inner" id="breathCircleInner"></div>
       </div>
+    </section>
+
+    <section class="card" id="mobileSupportCard">
+      <div class="card-header">
+        <h1>Apoyo desde el móvil</h1>
+        <span class="badge">Sensorial</span>
+      </div>
+      <p class="muted">Activa señales del dispositivo para apoyar la regulación sin mirar tanto la pantalla.</p>
+      <label class="row" for="comfortModeToggle">
+        <input type="checkbox" id="comfortModeToggle" />
+        <span>Modo comodidad alta (reduce estímulos)</span>
+      </label>
+      <label class="row" for="feedbackToggle">
+        <input type="checkbox" id="feedbackToggle" checked />
+        <span>Mostrar mensajes de retroalimentación en pantalla</span>
+      </label>
+      <label class="row" for="hapticToggle">
+        <input type="checkbox" id="hapticToggle" checked />
+        <span>Usar vibración guiada durante ejercicios</span>
+      </label>
+      <label class="row" for="voiceToggle">
+        <input type="checkbox" id="voiceToggle" />
+        <span>Leer fases de respiración en voz alta</span>
+      </label>
+      <div class="row stack" style="margin-top:12px">
+        <button class="btn" id="wakeLockBtn">Mantener pantalla encendida: OFF</button>
+        <button class="btn" id="mobilePulseBtn">Pausa háptica de 30s</button>
+        <button class="btn ghost" id="resetComfortBtn">Restaurar configuración recomendada</button>
+      </div>
+      <p class="tiny muted" id="mobileSupportHint">Si tu dispositivo no soporta una función, la app te lo indicará automáticamente.</p>
     </section>
 
     <section class="card" id="stateMenuCard">
