@@ -161,6 +161,7 @@ const emaBox = document.getElementById("emaBox");
 const emaActivation = document.getElementById("emaActivation");
 const emaDistress = document.getElementById("emaDistress");
 const emaContinue = document.getElementById("emaContinue");
+const emaSkip = document.getElementById("emaSkip");
 
 let currentTool = "";
 let pendingStart = null;
@@ -218,6 +219,13 @@ function startWithEMA(tool, startFn) {
   ovIllustration.style.display = "none";
 }
 
+function continueWithoutEMA() {
+  if (!pendingStart) return;
+  emaBox.classList.add("hidden");
+  ovNext.style.display = "";
+  pendingStart();
+}
+
 emaContinue.onclick = () => {
   if (!pendingStart) return;
   if (!saveEMA(currentTool, "pre")) return;
@@ -226,8 +234,10 @@ emaContinue.onclick = () => {
   pendingStart();
 };
 
+emaSkip.onclick = continueWithoutEMA;
+
 function finishTool(tool, message) {
-  const post = prompt("EMA post · Ansiedad/activación (0-10), Malestar (0-10). Escribe formato A,M por ejemplo 3,4");
+  const post = prompt("Opcional · EMA post (A,M). Ejemplo: 3,4. Si no quieres, pulsa cancelar.");
   if (post) {
     const [a, d] = post.split(",").map((v) => Number(v?.trim()));
     if (!Number.isNaN(a) && !Number.isNaN(d) && a >= 0 && a <= 10 && d >= 0 && d <= 10) {
@@ -274,6 +284,9 @@ const dbtBtn = document.getElementById("dbtBtn");
 const sosBtn = document.getElementById("sosBtn");
 const breathToggle = document.getElementById("breathToggle");
 const noiseToggle = document.getElementById("noiseToggle");
+const quickCalmBtn = document.getElementById("quickCalmBtn");
+const quickFocusBtn = document.getElementById("quickFocusBtn");
+const quickSleepBtn = document.getElementById("quickSleepBtn");
 
 function applyCareLevel() {
   const level = Number(careLevel.value);
@@ -306,6 +319,24 @@ function applyCareLevel() {
 }
 
 careLevel.onchange = applyCareLevel;
+
+quickCalmBtn.onclick = () => {
+  startSOS();
+};
+
+quickFocusBtn.onclick = () => {
+  actBtn.click();
+};
+
+quickSleepBtn.onclick = async () => {
+  breathMode.value = "coherence";
+  if (!breathing) {
+    breathToggle.click();
+  }
+  if (!noiseOn) {
+    await noiseToggle.onclick();
+  }
+};
 
 /* ===== SOS 5-4-3-2-1 ===== */
 const SOS = [
@@ -656,7 +687,7 @@ function verifyModules() {
     moduleStatus.textContent = `Faltan módulos: ${missing.join(", ")}`;
     moduleStatus.classList.add("danger");
   } else {
-    moduleStatus.textContent = "Módulos verificados: SOS, respiración, ruido, ACT, DBT, menú por estado y crisis.";
+    moduleStatus.textContent = "Lista rápida lista: SOS, respiración, ruido, ACT/DBT y crisis disponibles.";
   }
 }
 
