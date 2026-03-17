@@ -65,16 +65,16 @@ const onboarding = { step: 0 };
 
 const gateScreens = [
   {
-    title: "Límites de uso",
-    html: "<ul><li>Steam Out es solo una herramienta de autorregulación.</li><li>No ofrece diagnóstico, terapia ni intervención clínica.</li><li>Si hay riesgo inminente, no uses la app y busca ayuda humana inmediata.</li></ul>"
+    title: "¿Qué es Steam Out?",
+    html: "<ul><li>Es una herramienta para ayudarte a autorregularte (calmarte, enfocarte).</li><li><strong>No reemplaza medicinas, consulta con psiquiatra, ni emergencias.</strong></li><li>Si tienes síntomas severos, crisis, o ideas de hacerte daño: busca emergencias (911) o profesional ahora.</li></ul>"
   },
   {
     title: "Comprensión 1/2",
-    html: "<p>¿Esta app reemplaza tratamiento profesional?</p><label><input type='radio' name='q1' value='no'> No</label><br><label><input type='radio' name='q1' value='yes'> Sí</label>"
+    html: "<p><strong>¿Entiendes que esta app NO reemplaza medicación o atención profesional?</strong></p><label><input type='radio' name='q1' value='yes'> Sí, lo entiendo</label><br><label><input type='radio' name='q1' value='no'> No</label>"
   },
   {
     title: "Comprensión 2/2",
-    html: "<p>¿Comprendes este límite: si hay riesgo inminente, no debes usar la app y debes buscar ayuda inmediata?</p><label><input type='radio' name='q2' value='yes'> Sí, lo comprendo</label><br><label><input type='radio' name='q2' value='no'> No</label>"
+    html: "<p><strong>¿Comprendes que si hay crisis, síntomas severos o peligro: debes buscar 911 o emergencias?</strong></p><label><input type='radio' name='q2' value='yes'> Sí, lo comprendo</label><br><label><input type='radio' name='q2' value='no'> No</label>"
   }
 ];
 
@@ -107,8 +107,8 @@ gateNext.onclick = () => {
   if (onboarding.step < gateScreens.length - 1) {
     if (onboarding.step === 1) {
       const q1 = document.querySelector("input[name='q1']:checked")?.value;
-      if (q1 !== "no") {
-        alert("Por favor selecciona la respuesta correcta para continuar.");
+      if (q1 !== "yes") {
+        alert("Es importante que entiendas que esta app apoya, pero no reemplaza medicación ni profesionales. Por favor confirma para continuar.");
         return;
       }
     }
@@ -207,21 +207,21 @@ function startTool(tool, startFn) {
 }
 
 function finishTool(tool, message) {
-  ovStepTitle.textContent = "Listo";
+  ovStepTitle.textContent = "Completado";
   ovHint.textContent = message;
   ovIllustration.style.display = "none";
   ovNext.disabled = true;
   ovProgress.style.width = "100%";
   logToolSession(tool, "complete");
-  announceFeedback("Ejercicio completado. Registra cómo te sientes ahora.", 35);
+  announceFeedback("Bien hecho. ¿Cómo te sientes ahora?", 35);
 }
 
 function runUniversalStop() {
   stopBreathing(true);
   setCrisisScreen(true);
-  ovTitle.textContent = "STOP";
+  ovTitle.textContent = "ALTO";
   ovStepTitle.textContent = "Pausa de seguridad";
-  ovHint.textContent = "Respira normal, pies al suelo y nombra 3 objetos neutrales. Si no baja en pocos minutos, mantén pantalla de crisis y busca ayuda.";
+  ovHint.textContent = "Respira normal. Pon los pies en el suelo. Nombra 3 cosas reales que ves. Si no mejora en 5 minutos, llama a emergencias (911) o habla con alguien.";
   ovTapArea.style.display = "none";
   ovIllustration.style.display = "none";
   ovNext.disabled = true;
@@ -346,7 +346,7 @@ function startSOS() {
       sI++;
       if (sI >= SOS.length) {
         ovTapArea.style.display = "none";
-        finishTool("sos", "Respira normal. Has completado el grounding 5-4-3-2-1.");
+        finishTool("sos", "Bien. Respira normal. Ya estás más anclado/a a la realidad.");
         return;
       }
       sN = 0;
@@ -360,7 +360,7 @@ function startSOS() {
 function loadSOS() {
   ovIllustration.style.display = "none";
   ovStepTitle.textContent = SOS[sI][0];
-  ovHint.textContent = `Toca el centro ${SOS[sI][1]} veces (${sI + 1}/${SOS.length})`;
+  ovHint.textContent = `Toca ${SOS[sI][1]} veces el círculo (paso ${sI + 1} de ${SOS.length})`;
   ovCount.textContent = "0";
   ovNext.disabled = true;
   ovTapArea.style.display = "";
@@ -372,22 +372,22 @@ sosBtn.onclick = startSOS;
 /* ===== ACT/DBT guided ===== */
 actBtn.onclick = () => {
   const steps = [
-    ["Observar", "Identifica lo que sientes (ansiedad, enojo, tensión).", "./assets/act.png"],
-    ["Defusión", "Di: 'Estoy teniendo el pensamiento de que...'.", "./assets/act.png"],
-    ["Anclar", "Exhala lento 3 veces y nota tus pies en el suelo.", "./assets/act.png"],
-    ["Regresar", "Elige un siguiente paso pequeño y seguro.", "./assets/act.png"]
+    ["Paso 1: Observa", "¿Qué emoción sientes ahora? (ansiedad, enojo, tristeza...)", "./assets/act.png"],
+    ["Paso 2: Nombre el pensamiento", "Di para ti: 'Estoy teniendo el pensamiento de que...'", "./assets/act.png"],
+    ["Paso 3: Ancla tu cuerpo", "Exhala lento 3 veces. Nota dónde tocan tus pies.", "./assets/act.png"],
+    ["Paso 4: Elige qué hacer", "Una acción pequeña y segura. No tiene que ser perfecta.", "./assets/act.png"]
   ];
-  runSteps("Tomar Distancia (ACT)", steps, "act");
+  runSteps("Observar sin creer", steps, "act");
 };
 
 dbtBtn.onclick = () => {
   const steps = [
-    ["STOP", "Stop · da un paso atrás · observa · procede con calma.", "./assets/dbt.png"],
-    ["Respirar", "Inhala 4s, exhala 6s.", "./assets/dbt.png"],
-    ["Re-orientar", "Nombra 3 objetos y 2 sonidos.", "./assets/dbt.png"],
-    ["Mínimo", "Haz la tarea más pequeña posible durante 2 minutos.", "./assets/dbt.png"]
+    ["Paso 1: Pausa", "Para. Respira normal 3 veces. Mira alrededor.", "./assets/dbt.png"],
+    ["Paso 2: Respira lento", "Inhala en 4, exhala en 6. Repite 5 veces.", "./assets/dbt.png"],
+    ["Paso 3: Nota la realidad", "Nombra 3 cosas que ves y 2 que escuchas.", "./assets/dbt.png"],
+    ["Paso 4: Acción mínima", "Haz algo muy pequeño por 2 minutos (no tiene que arreglarlo todo).", "./assets/dbt.png"]
   ];
-  runSteps("Cambio de Estado (DBT)", steps, "dbt");
+  runSteps("Cambio rápido", steps, "dbt");
 };
 
 function runSteps(title, steps, toolName) {
@@ -656,28 +656,43 @@ const stateTools = document.getElementById("stateTools");
 const quickMenu = {
   ansiedad: [
     "Respiración: exhalación prolongada 4-6 por 90s.",
-    "Grounding: orienting reflex (nombra 5 objetos).",
-    "DBT: STOP + acción mínima de 2 min."
+    "Grounding: 5-4-3-2-1 (nombra 5 cosas que ves).",
+    "DBT: STOP + acción muy pequeña en 2 min."
   ],
   rumiacion: [
     "Respiración: coherencia cardiaca 5-5 por 3 min.",
-    "Grounding: objeto ancla (describe textura 60s).",
-    "ACT: 'Estoy teniendo el pensamiento de…'."
+    "Grounding: describe un objeto con detalles (textura, peso).",
+    "ACT: 'Estoy teniendo el pensamiento de…' (observa sin creer)."
   ],
   tristeza: [
-    "Respiración: 3 respiraciones de anclaje.",
-    "Grounding: pies al suelo (empuja 10s/suelta 10s x3).",
-    "TCC conductual: activación de 2 minutos."
+    "Respiración: 3 respiraciones profundas.",
+    "Grounding: pies en el suelo (siente la presión).",
+    "Acción: algo pequeño que te cuide (té, agua, luz)."
   ],
   irritabilidad: [
-    "Respiración: exhala 6–8s durante 2 min.",
-    "Grounding: sonido focal (describe 1 sonido estable).",
-    "DBT: Pros/Cons antes de reaccionar."
+    "Respiración: exhala más lento que inhalas durante 2 min.",
+    "Grounding: un sonido que te calme (agua, naturaleza).",
+    "Pausa: 5 min lejos antes de responder."
   ],
   insomnio: [
     "Respiración: coherencia cardiaca 5-5 en cama.",
-    "Grounding: body scan breve sin forzar.",
-    "Sueño: si >20 min despierto, estímulo control suave."
+    "Grounding: body scan lentamente (sin forzar).",
+    "Si llevas >20 min despierto: levántate brevemente."
+  ],
+  voces: [
+    "Respiración: exhalación prolongada para bajar activación.",
+    "Realidad: nombra 5 cosas reales que toqués, ves, hueles.",
+    "Contacto: llama a alguien de confianza o busca a un adulto."
+  ],
+  confusionRealidad: [
+    "Pausa: respira normal, pies en el suelo.",
+    "Realidad: nombra 3 objetos muy reales que toques ahora.",
+    "Contacto: si no mejora en 5 min, habla con alguien o usa crisis."
+  ],
+  concentracion: [
+    "Respiración: coherencia cardiaca para recuperar energía.",
+    "Movimiento: camina 2 minutos o estira.",
+    "Foco: elige una tarea de 5 minutos muy pequeña."
   ]
 };
 
@@ -789,12 +804,12 @@ function showCheckSummary() {
 
 function suggestProfessionalContact(type) {
   if (type === "checkout") {
-    alert("Tus valores en el check-out son altos (9-10). Te recomendamos con insistencia contactar a una/un profesional de salud mental hoy. Puedes seguir usando la app como apoyo, pero busca acompañamiento humano.");
-    alert("Importante: si esto se mantiene o empeora, prioriza hablar con un profesional o servicio de urgencias de tu zona.");
+    alert("Tus síntomas siguen siendo muy fuertes (9-10 después del ejercicio). La app ayuda, pero ahora necesitas apoyo profesional. Llama a tu psiquiatra, médico, o a emergencias (911).");
+    alert("Recuerda: no estás solo/a. Buscar ayuda es lo correcto.");
     return;
   }
 
-  alert("Tus valores en el check-in son altos (9-10). Te sugerimos contactar a una/un profesional de salud mental. Puedes continuar usando la app como apoyo.");
+  alert("Tus síntomas están muy fuertes (9-10 ahora). La app es apoyo, pero tú necesitas profesional. Si ves a un psiquiatra, cuéntale cómo te sientes.");
 }
 
 saveCheckinBtn.onclick = () => {
@@ -807,8 +822,8 @@ saveCheckinBtn.onclick = () => {
     suggestProfessionalContact("checkin");
   }
 
-  checkFeedback.textContent = "Check-in guardado. Ahora puedes usar una herramienta breve y luego hacer check-out.";
-  announceFeedback("Check-in guardado correctamente.", 20);
+  checkFeedback.textContent = "Guardado. Ahora elige una herramienta y luego haz check-out para ver si te ayudó.";
+  announceFeedback("Guardado. Úsalo y luego registra cómo quedaste.", 20);
   showCheckSummary();
   setCheckTab("checkout");
 };
@@ -824,8 +839,8 @@ saveCheckoutBtn.onclick = () => {
     suggestProfessionalContact("checkout");
   }
 
-  checkFeedback.textContent = "Check-out guardado. Gracias: esto permite ver si la app te está sirviendo en el tiempo.";
-  announceFeedback("Check-out guardado. Buen trabajo cerrando el ciclo.", 20);
+  checkFeedback.textContent = "Guardado. Así podemos ver con el tiempo si esto te ayuda.";
+  announceFeedback("Bien. Cada registro nos ayuda a ver qué funciona para ti.", 20);
   showCheckSummary();
 };
 

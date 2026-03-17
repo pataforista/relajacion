@@ -28,10 +28,12 @@
   <div class="crisis-screen" id="crisisScreen" aria-hidden="true">
     <div class="card">
       <h1>Conexión humana inmediata</h1>
-      <p>Si hay riesgo inminente, no uses la app y busca ayuda profesional o de emergencia.</p>
+      <p>Si hay riesgo inminente, no uses la app y busca ayuda profesional o de emergencia ahora.</p>
       <ul>
-        <li><a href="tel:112">Llamar a emergencias (112)</a></li>
-        <li><a href="tel:024">Línea 024 (España)</a></li>
+        <li><a href="tel:911">Emergencias: 911</a></li>
+        <li><a href="tel:5255102800">Línea PAS (Psicosocial): 55 5510 2800</a></li>
+        <li><a href="tel:9661234567">Consejería Telefónica IMSS: 01-800-2222-668</a></li>
+        <li><strong>Psiquiatra o médico de urgencias más cercano</strong></li>
       </ul>
       <button class="btn" id="closeCrisis">Cerrar pantalla de crisis</button>
     </div>
@@ -87,7 +89,7 @@
         <h1>Seguimiento simple</h1>
         <span class="badge">No clínico</span>
       </div>
-      <p class="muted">Haz check-in y check-out en un pop-up breve con barras visuales.</p>
+      <p class="muted">Antes y después: registra cómo te sientes en escalas simples (1-10).</p>
       <button class="btn primary" id="checkPopupBtn">Abrir check-in / check-out</button>
       <p class="tiny muted" id="checkSummary">Aún no hay suficientes registros para mostrar evolución.</p>
     </section>
@@ -95,8 +97,8 @@
     <details class="card details-card" id="advancedSettings">
       <summary>Ajustes avanzados (normalmente no hace falta tocar esto)</summary>
       <div class="details-content">
-        <h1>Nivel de apoyo (stepped care)</h1>
-        <p class="muted">Si usas esta app en modo personal, deja nivel 1. Solo cambia esto si necesitas más contención.</p>
+        <h1>Nivel de apoyo</h1>
+        <p class="muted">Elige tu nivel según cuánto apoyo necesites. Si estás bien, nivel 1. Si los síntomas son más fuertes, elige más alto.</p>
         <label class="muted" for="careLevel">Nivel actual</label>
         <select id="careLevel">
           <option value="1">Nivel 1 · autogestión completa</option>
@@ -110,20 +112,20 @@
 
     <section class="card">
       <h1>STOP universal</h1>
-      <p class="muted">Si aparece mareo intenso, sensación de desmayo, dolor torácico, disnea marcada, desrealización que sube o pánico que escala:</p>
+      <p class="muted">Si sientes: mareo, sensación de desmayo, dolor en el pecho, dificultad para respirar, que las cosas no son reales, o pánico muy fuerte:</p>
       <ul>
-        <li>Pausa inmediatamente la técnica.</li>
-        <li>Respira normal (sin retención), pies al suelo y nombra 3 objetos.</li>
-        <li>Si no baja en pocos minutos, usa el botón de crisis.</li>
+        <li>Pausa inmediatamente el ejercicio.</li>
+        <li>Respira normal (sin retención), pon los pies en el suelo y nombra 3 objetos que ves.</li>
+        <li>Si no mejora en 5 minutos, usa el botón de crisis o llama a alguien de confianza.</li>
       </ul>
     </section>
 
     <section class="card hero">
       <div class="card-header">
-        <h1>SOS · Grounding</h1>
-        <span class="badge danger">Urgente</span>
+        <h1>SOS · Anclaje a la realidad</h1>
+        <span class="badge danger">Para emergencias emocionales</span>
       </div>
-      <p class="muted">Para cuando el pensamiento o la emoción te abruma. Técnica 5-4-3-2-1.</p>
+      <p class="muted">Cuando te sientes abrumado/a o desconectado/a. Técnica 5-4-3-2-1: toca, ve, escucha, huele, saborea.</p>
       <button class="btn primary danger large" id="sosBtn">Necesito calmarme ahora</button>
     </section>
 
@@ -152,25 +154,25 @@
 
     <section class="card" id="mobileSupportCard">
       <div class="card-header">
-        <h1>Apoyo desde el móvil</h1>
-        <span class="badge">Sensorial</span>
+        <h1>Personalizar el dispositivo</h1>
+        <span class="badge">Apoyo</span>
       </div>
-      <p class="muted">Activa señales del dispositivo para apoyar la regulación sin mirar tanto la pantalla.</p>
+      <p class="muted">Elige si quieres vibración, voz, mensajes u otros apoyos. Tú decides qué necesitas.</p>
       <label class="row" for="comfortModeToggle">
         <input type="checkbox" id="comfortModeToggle" />
-        <span>Modo comodidad alta (reduce estímulos)</span>
+        <span>Menos estímulos (sin vibración, voz, ni mensajes)</span>
       </label>
       <label class="row" for="feedbackToggle">
         <input type="checkbox" id="feedbackToggle" checked />
-        <span>Mostrar mensajes de retroalimentación en pantalla</span>
+        <span>Mostrar mensajes en pantalla</span>
       </label>
       <label class="row" for="hapticToggle">
         <input type="checkbox" id="hapticToggle" checked />
-        <span>Usar vibración guiada durante ejercicios</span>
+        <span>Vibración durante ejercicios</span>
       </label>
       <label class="row" for="voiceToggle">
         <input type="checkbox" id="voiceToggle" />
-        <span>Leer fases de respiración en voz alta</span>
+        <span>Voz para respiración</span>
       </label>
       <div class="row stack" style="margin-top:12px">
         <button class="btn" id="wakeLockBtn">Mantener pantalla encendida: OFF</button>
@@ -183,13 +185,16 @@
     <section class="card" id="stateMenuCard">
       <h1>Menú rápido por estado</h1>
       <p class="muted">Una mini-guía clara para cuando no sabes por dónde empezar.</p>
-      <label class="muted" for="stateSelect">Estado actual</label>
+      <label class="muted" for="stateSelect">¿Cómo te sientes ahora?</label>
       <select id="stateSelect">
-        <option value="ansiedad">Ansiedad alta</option>
-        <option value="rumiacion">Rumiación</option>
-        <option value="tristeza">Tristeza / apagamiento</option>
-        <option value="irritabilidad">Irritabilidad</option>
-        <option value="insomnio">Insomnio</option>
+        <option value="ansiedad">Ansiedad o nerviosismo muy alto</option>
+        <option value="rumiacion">Doy vueltas al mismo pensamiento</option>
+        <option value="tristeza">Tristeza, cansancio o apagamiento</option>
+        <option value="irritabilidad">Enojo o irritabilidad</option>
+        <option value="insomnio">No puedo dormir</option>
+        <option value="voces">Escucho cosas o tengo pensamientos intrusivos</option>
+        <option value="confusionRealidad">No estoy seguro de qué es real</option>
+        <option value="concentracion">Me cuesta pensar o concentrarme</option>
       </select>
       <div class="row stack" id="stateTools" style="margin-top:12px"></div>
     </section>
@@ -208,16 +213,16 @@
     </section>
 
     <section class="card">
-      <h1>Cierre Cognitivo</h1>
-      <p class="muted">Intervenciones breves para salir del bucle mental sin sobrepensar.</p>
+      <h1>Salir del bucle de pensamientos</h1>
+      <p class="muted">Cuando das vueltas al mismo pensamiento, estas herramientas te ayudan a soltar y refocarte.</p>
       <div class="row stack">
         <button class="btn" id="actBtn">
-          <span class="btn-title">Tomar Distancia (ACT)</span>
-          <span class="btn-sub">Observar el pensamiento · 60s</span>
+          <span class="btn-title">Observar sin creer</span>
+          <span class="btn-sub">Ver el pensamiento sin hacerle caso · 60s</span>
         </button>
         <button class="btn" id="dbtBtn">
-          <span class="btn-title">Cambio de Estado (DBT)</span>
-          <span class="btn-sub">Fisiología y enfoque · 90s</span>
+          <span class="btn-title">Cambio rápido</span>
+          <span class="btn-sub">Pausa + respiración + acción pequeña · 90s</span>
         </button>
       </div>
       <p class="tiny muted" style="margin-top:12px">No solicita datos personales. Uso 100% privado y local.</p>
@@ -227,9 +232,7 @@
 
   <footer class="bottom-info">
     <div class="disclaimer">
-      <strong>Aviso:</strong> Esta aplicación es una herramienta de apoyo para la autorregulación emocional. No
-      sustituye la atención médica o psicológica profesional. En caso de crisis grave, contacta con servicios de
-      emergencia locales.
+      <strong>Aviso importante:</strong> Esta aplicación es un apoyo para autorregulación. <strong>No reemplaza medicación, consulta con psiquiatra, ni atención de crisis profesional.</strong> Si tomas medicinas para tu salud mental, sigue tomándolas. En crisis grave, llama al 911 o acude a emergencias.
     </div>
     <div class="credits">
       Desarrollado por <strong>CACB</strong> &middot; 2026
@@ -247,12 +250,12 @@
       </div>
 
       <div class="m3-segmented" role="tablist" aria-label="Tipo de registro">
-        <button class="m3-segment active" id="openCheckinTab" type="button">Check-in</button>
-        <button class="m3-segment" id="openCheckoutTab" type="button">Check-out</button>
+        <button class="m3-segment active" id="openCheckinTab" type="button">Antes (Inicio)</button>
+        <button class="m3-segment" id="openCheckoutTab" type="button">Después (Final)</button>
       </div>
 
       <div class="check-block" id="checkinBlock">
-        <p class="tiny muted">Antes de usar herramientas.</p>
+        <p class="tiny muted">¿Cómo te sientes ahora? (antes de usar una herramienta)</p>
         <label>Ansiedad <span id="checkinAnxietyValue">5</span>
           <input id="checkinAnxiety" type="range" min="1" max="10" value="5" />
         </label>
@@ -266,7 +269,7 @@
       </div>
 
       <div class="check-block hidden" id="checkoutBlock">
-        <p class="tiny muted">Al terminar, para valorar utilidad.</p>
+        <p class="tiny muted">Después de usar la herramienta, ¿cómo te sientes?</p>
         <label>Ansiedad <span id="checkoutAnxietyValue">5</span>
           <input id="checkoutAnxiety" type="range" min="1" max="10" value="5" />
         </label>
