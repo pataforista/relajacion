@@ -14,10 +14,12 @@
 
   <div class="gate" id="disclaimerGate" aria-hidden="true">
     <div class="gate-card">
-      <h1>Antes de comenzar</h1>
-      <p class="muted">Steam Out es una herramienta autogestiva de bienestar. No ofrece diagnóstico ni tratamiento.</p>
+      <div style="margin-bottom: var(--md-spacing-4);">
+        <h1>Bienvenido a Steam Out</h1>
+        <p class="muted">Una herramienta de autogestión de bienestar. Conoce sus límites antes de empezar.</p>
+      </div>
       <div id="gateStep"></div>
-      <div class="row" style="margin-top: 14px;">
+      <div class="row" style="margin-top: var(--md-spacing-6); gap: var(--md-spacing-3);">
         <button class="btn" id="gateBack" style="display:none;">Atrás</button>
         <div class="grow"></div>
         <button class="btn primary" id="gateNext">Continuar</button>
@@ -42,10 +44,10 @@
   <button class="btn danger floating-crisis" id="crisisBtn">Botón de crisis</button>
 
   <header class="top">
-    <div class="brand">Steam Out</div>
-    <div class="row">
+    <div class="brand" style="font-size: 20px; letter-spacing: 1px;">Steam Out</div>
+    <div class="row" style="gap: var(--md-spacing-2);">
       <button class="btn ghost" id="themeToggle" title="Cambiar tema"
-        style="padding: 8px; font-size: 18px; display: flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px;">🌙</button>
+        style="padding: 0; font-size: 20px; display: flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; border: none;">🌙</button>
       <div class="badge" id="netBadge">offline-ready</div>
     </div>
   </header>
@@ -243,15 +245,15 @@
     <div class="m3-sheet">
       <div class="overlayTop">
         <div>
-          <div class="overlayTitle">Check-in / Check-out</div>
-          <p class="tiny muted" style="margin:4px 0 0">Escalas visuales 1–10 para seguimiento personal.</p>
+          <div class="overlayTitle">Seguimiento personal</div>
+          <p class="tiny muted" style="margin:var(--md-spacing-1) 0 0">Escalas 1–10 para entender qué te ayuda.</p>
         </div>
-        <button class="btn ghost" id="checkModalClose">Cerrar</button>
+        <button class="btn ghost" id="checkModalClose" style="font-size: 20px; width: 44px; height: 44px; padding: 0;">✕</button>
       </div>
 
       <div class="m3-segmented" role="tablist" aria-label="Tipo de registro">
-        <button class="m3-segment active" id="openCheckinTab" type="button">Antes (Inicio)</button>
-        <button class="m3-segment" id="openCheckoutTab" type="button">Después (Final)</button>
+        <button class="m3-segment active" id="openCheckinTab" type="button">Antes</button>
+        <button class="m3-segment" id="openCheckoutTab" type="button">Después</button>
       </div>
 
       <div class="check-block" id="checkinBlock">
@@ -293,7 +295,7 @@
     <div class="overlayCard">
       <div class="overlayTop">
         <div class="overlayTitle" id="ovTitle">SOS</div>
-        <button class="btn ghost" id="ovClose">Cerrar</button>
+        <button class="btn ghost" id="ovClose" style="font-size: 20px; width: 44px; height: 44px; padding: 0;">✕</button>
       </div>
 
       <div id="ovIllustration" style="text-align: center; margin-bottom: 12px; display: none;">
